@@ -4,7 +4,8 @@ It uses pymol via commandline to do some of the tasks (could likely be ported to
 
 ## General architecture
 (Written in retrospect in 2024)
-- Whole program is split into 7 steps, which are individual python files, which need to be run separately and in order.
+- Whole program is split into 6 (+1 now obsolete) steps, which are individual python files, which need to be run separately and in order.
+- Understand steps 1-5 as "training" the model on the empirical structures with SF4 files and step 6 and 7 as using that knowledge to find positions on a new structure of interest. I.e. you need to run 1-5 only once and then repeat 6 and 7 for every structure, where you want to find a position to engineer an SF4 onto.
 - Beforehand, one should have searched for and downloaded all pdb files containing the ligand "SF4", which is the code for 4Fe4S clusters. Probably you want to take those from a non-redundant subset of the PDB, potentially apply some filters for resolution or such. This is not part of the script!
 - Steps:
     1. Looks through all pdb files in a folder, reads out the protein sequence for every chain, keeps only one copy of almost identical chains (homodimers) and writes a single pdb file for each chain.
@@ -13,7 +14,7 @@ It uses pymol via commandline to do some of the tasks (could likely be ported to
     Note: B-factors represent a unique "Clusternumber" so one can backtrack to the original PDB Structure.
     4. ( SEEMS MADE OBSOLETE NOW AND REPLACED BY 5) 
     Looks at every atom (not too far away and not close to origin) in those C-alpha and C-beta and N-pdb-files, counts neighboring atoms within 0.5 A distance and changes the B-factor to that number. Spits out new pdb-file with those b-factors.
-    5. Divides the space around the ori in boxes of 0.5 A edgelength, then goes through the pdb-file with all C-alpha and for each box, counts the number of atoms in there. Then for each box of C-alpha atoms, checks the respective N-atoms, rejects outliers of more than 1 A away from their average and counts how many there are and where. Returns that as N-box for the C-alpha box. Same then for C-atoms and the Fe atoms. certain Spits out one pdb-file with atoms in the box positions and b-factor with the count of atoms in that box for visualization. But also a .txt file containing a running number for the box, coordinates of the all-lower corner of the box, number of atoms, etc.... this file is going to be used in the next step(s).
+    5. Divides the space around the ori in boxes of 0.5 A edgelength, then goes through the pdb-file with all C-alpha and for each box, counts the number of atoms in there. Then for each box of C-alpha atoms, checks the respective N-atoms, rejects outliers of more than 1 A away from their average and counts how many there are and where. Returns that as N-box for the C-alpha box. Same then for C-atoms and the Fe atoms. Spits out one pdb-file with atoms in the box positions and b-factor with the count of atoms in that box for visualization. But also a .txt file containing a running number for the box, coordinates of the all-lower corner of the box, number of atoms, etc.... this file is going to be used in the next step(s).
     6. This uses the files from (5) and an input pdb-file, where you want to find positions to put an SF4 in, let's you select a subset of residues you are interested in (if you want the SF4 to be in a specific area) and then loops over all those residues:
     - Align whole structure to have that residue at the origin
     - Make a 15 A sphere around that residue to limit secondary residues, which could be of potential interest
